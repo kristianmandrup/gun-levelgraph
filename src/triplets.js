@@ -1,5 +1,7 @@
 import Gun from 'gun/gun'
-import 'gun-edge'
+import chain from 'gun-edge'
+
+chain(Gun)
 
 export async function toTriplets(self, opt) {
   console.log(self)
