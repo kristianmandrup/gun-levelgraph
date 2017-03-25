@@ -31,14 +31,15 @@ mark.put({
 })
 
 mark.path('wife').put(amber)
+mark.path('self').put(mark)
 
 let val = await mark.$value()
 console.log('mark', val)
 
 let jsonld = await mark.$toJsonLd({
-  paths: ['wife']
+  paths: ['wife', 'self']
 })
-console.log(jsonld)
+console.log('JSONLD', jsonld)
 t.is(jsonld.name, 'mark')
 t.is(jsonld.wife.name, 'amber')
 ```
@@ -46,18 +47,24 @@ t.is(jsonld.wife.name, 'amber')
 Outputs:
 
 ```js
+mark
+{ name: 'mark',
+  gender: 'male',
+  wife: { '#': 'amber' },
+  self: { '#': 'mark' } }
+
+JSONLD
 { '@id': 'mark',
   name: 'mark',
   gender: 'male',
-  wife: {
-    '@id': 'amber',
-    name: 'amber',
-    gender: 'female'
-  }
-}
+  wife: { '@id': 'amber', name: 'amber', gender: 'female' },
+  self: { '@id': 'mark' } }
 ```
 
-Which can then be saved to LevelGraph
+Note that it detects circular references and for such nodes already visited, it only
+returns the `@id` reference.
+
+The JsonLD JSON object can then be saved to LevelGraph
 
 ```js
 db.jsonld.put(jsonld, function(err, obj) {

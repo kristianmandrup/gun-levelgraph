@@ -6,7 +6,6 @@ chain(Gun)
 const gun = Gun();
 
 test('savejsonld', async t => {
-  let name = 'mark'
   let mark = gun.get('mark')
   let amber = gun.get('amber')
 
@@ -21,14 +20,18 @@ test('savejsonld', async t => {
   })
 
   mark.path('wife').put(amber)
+  mark.path('self').put(mark)
 
   let val = await mark.$value()
   console.log('mark', val)
 
-  let jsonld = await mark.$toJsonLd({
-    paths: ['wife']
+  let {
+    result,
+    json
+  } = await mark.$toJsonLd({
+    paths: ['wife', 'self']
   })
-  console.log(jsonld)
-  t.is(jsonld.name, 'mark')
-  t.is(jsonld.wife.name, 'amber')
+  console.log('JSONLD', json)
+  t.is(result.name, 'mark')
+  t.is(result.wife.name, 'amber')
 })
