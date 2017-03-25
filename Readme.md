@@ -14,50 +14,56 @@ WIP
 npm i -S gun-levelgraph
 ```
 
-## Goals
+## Usage
 
 ```js
-  let daniele = gun.get('person/daniele').put({
-    name: 'daniele'
-    gender: 'female'
-  })
+let mark = gun.get('mark')
+let amber = gun.get('amber')
 
-  let mark = gun.get('mark/person').put({
-    name: 'mark',
-    gender: 'male'
-    knows: daniele
-  })
+amber.put({
+  name: 'amber',
+  gender: 'female'
+})
 
-  let triplets = await gun.get('mark').toTriplets()
-  console.log(triplets)
+mark.put({
+  name: 'mark',
+  gender: 'male',
+})
+
+mark.path('wife').put(amber)
+
+let val = await mark.$value()
+console.log('mark', val)
+
+let jsonld = await mark.$toJsonLd({
+  paths: ['wife']
+})
+console.log(jsonld)
+t.is(jsonld.name, 'mark')
+t.is(jsonld.wife.name, 'amber')
 ```
 
-Output something like this:
+Outputs:
 
 ```js
-{
-  "@id": "person/mark",
-  "name": "mark",
-  "gender": "male",
-  "knows": [{
-    "@id": "person/daniele",
-    "name": "Daniele"
-    "gender": "female",
-  }]
+{ '@id': 'mark',
+  name: 'mark',
+  gender: 'male',
+  wife: {
+    '@id': 'amber',
+    name: 'amber',
+    gender: 'female'
+  }
 }
 ```
 
 Which can then be saved to LevelGraph
 
 ```js
-db.jsonld.put(triplets, function(err, obj) {
+db.jsonld.put(jsonld, function(err, obj) {
   console.log('SAVED', obj)
 }
 ```
-
-## Usage
-
-TODO
 
 ## Licence
 
