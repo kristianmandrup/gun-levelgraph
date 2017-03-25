@@ -1,23 +1,34 @@
 import Gun from 'gun/gun'
 import test from 'ava'
 import '../src/triplets'
-
+import chain from 'gun-edge'
+chain(Gun)
 const gun = Gun();
 
 test('saveTriplets', async t => {
   let name = 'mark'
   let mark = gun.get('mark')
-  gun.get('mark').put({
-    name,
-    gender: 'male'
+  let amber = gun.get('amber')
+
+  amber.put({
+    name: 'amber',
+    gender: 'female'
   })
 
-  console.log('Gun.chain', Gun.chain)
+  mark.put({
+    name: 'mark',
+    gender: 'male',
+  })
+
+  mark.path('wife').put(amber)
 
   let val = await mark.$value()
   console.log('mark', val)
 
-  // let triplets = await gun.get('mark').toTriplets()
-  // console.log(triplets)
-  // t.is(triplets.name, name)
+  let triplets = await mark.$toTriplets({
+    paths: ['wife']
+  })
+  console.log(triplets)
+  t.is(triplets.name, 'mark')
+  t.is(triplets.wife.name, 'amber')
 })
