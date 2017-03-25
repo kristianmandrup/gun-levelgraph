@@ -2,7 +2,7 @@
   "name": "gun-levelgraph",
   "version": "0.1.0",
   "description": "Gun to LevelGraph/triplets translation",
-  "main": "index.js",
+  "main": "dist/to-jsonld.js",
   "scripts": {
     "test": "ava",
     "watch": "gulp watch",
