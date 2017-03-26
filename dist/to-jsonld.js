@@ -38,7 +38,7 @@ async function toLdGraph(self) {
   delete opts['paths'];
 
   async function parse(field) {
-    var fieldNode = await self.path(field);
+    var fieldNode = self.path(field);
     opts.path = fullPath + '/' + field;
     return await toLdGraph(fieldNode, opts);
   }
