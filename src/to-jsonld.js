@@ -24,7 +24,7 @@ export async function toLdGraph(self, opts = {}) {
   delete opts['paths']
 
   async function parse(field) {
-    let fieldNode = await self.path(field)
+    let fieldNode = self.path(field)
     opts.path = fullPath + '/' + field
     return await toLdGraph(fieldNode, opts)
   }
