@@ -30,14 +30,20 @@ mark.put({
   gender: 'male',
 })
 
-mark.path('wife').put(amber)
-mark.path('self').put(mark)
+// mark.path('wife').put(amber)
+mark.putAt('wife', amber)
+
+// mark.path('self').put(mark)
+mark.putAt('self', mark)
 
 let val = await mark.$value()
 console.log('mark', val)
 
 let jsonld = await mark.$toJsonLd({
-  paths: ['wife', 'self']
+  // Note:
+  //   each node using putAt to add path nodes
+  //   will contain paths list in metadata
+  // paths: ['wife', 'self']
 })
 console.log('JSONLD', jsonld)
 t.is(jsonld.name, 'mark')

@@ -19,8 +19,11 @@ test('savejsonld', async t => {
     gender: 'male',
   })
 
-  mark.path('wife').put(amber)
-  mark.path('self').put(mark)
+  // mark.path('wife').put(amber)
+  mark.putAt('wife', amber)
+
+  // mark.path('self').put(mark)
+  mark.putAt('self', mark)
 
   let val = await mark.$value()
   console.log('mark', val)
@@ -29,7 +32,7 @@ test('savejsonld', async t => {
     result,
     json
   } = await mark.$toJsonLd({
-    paths: ['wife', 'self']
+    // paths: ['self']
   })
   console.log('JSONLD', json)
   t.is(result.name, 'mark')

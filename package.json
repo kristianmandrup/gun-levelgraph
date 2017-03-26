@@ -21,7 +21,7 @@
   "dependencies": {
     "async": "^2.1.5",
     "gun": "^0.6.6",
-    "gun-edge": "^0.7.8",
+    "gun-edge": "kristianmandrup/gun-edge#master",
     "gun-level": "^4.0.1",
     "level": "^1.6.0",
     "levelgraph": "^2.0.1",

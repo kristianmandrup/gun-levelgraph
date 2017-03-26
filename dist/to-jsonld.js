@@ -44,8 +44,11 @@ async function toLdGraph(self) {
   }
 
   var fields = await self.$fields();
-  if (opts.paths) {
-    fields = fields.concat(opts.paths);
+  var nodePaths = opts.paths || [];
+  nodePaths = nodePaths.concat(self._.paths || []);
+
+  if (nodePaths) {
+    fields = fields.concat(nodePaths);
   }
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;

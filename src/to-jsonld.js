@@ -30,8 +30,11 @@ export async function toLdGraph(self, opts = {}) {
   }
 
   let fields = await self.$fields()
-  if (opts.paths) {
-    fields = fields.concat(opts.paths)
+  let nodePaths = opts.paths || []
+  nodePaths = nodePaths.concat(self._.paths || [])
+
+  if (nodePaths) {
+    fields = fields.concat(nodePaths)
   }
   for (let field of fields) {
     jsonld[field] = await parse(field)
