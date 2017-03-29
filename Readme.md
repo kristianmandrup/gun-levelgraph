@@ -67,8 +67,18 @@ JSONLD
   self: { '@id': 'mark' } }
 ```
 
-Note that it detects circular references and for such nodes already visited, it only
-returns the `@id` reference.
+Note that it detects circular references and for such nodes already visited, it only returns the `@id` reference.
+
+The triples for that look like this:
+
+```
+<mark> <gender> "male" .
+<mark> <name> "mark" .
+<mark> <self> <mark> .
+```
+
+Triples are just sentences (conceptually): `Subject`, `Predicate`, `Object`. 
+Here's some valid JSON-LD (adds a `@context`) in the [JSON-LD Playground](http://json-ld.org/playground/#startTab=tab-normalized&json-ld=%7B%22%40context%22%3A%22http%3A%2F%2Fschema.org%2F%22%2C%22%40id%22%3A%22%23mark%22%2C%22name%22%3A%22mark%22%2C%22gender%22%3A%22male%22%2C%22self%22%3A%7B%22%40id%22%3A%22%23mark%22%7D%7D&context=%7B%7D) to play with.
 
 The JsonLD JSON object can then be saved to LevelGraph
 
