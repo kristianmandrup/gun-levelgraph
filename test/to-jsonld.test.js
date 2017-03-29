@@ -1,6 +1,8 @@
 import Gun from 'gun/gun'
 import test from 'ava'
-import '../src/to-jsonld'
+import {
+  createToLdGraph
+} from '../src/to-jsonld'
 import chain from 'gun-edge'
 chain(Gun)
 const gun = Gun();
@@ -29,11 +31,17 @@ test('savejsonld', async t => {
   console.log('mark', val)
 
   let {
+    toLdGraph,
+    toJsonLd
+  } = createToLdGraph({
+    // logging: true
+  })
+
+  let {
     result,
     json
-  } = await mark.$toJsonLd({
-    // paths: ['self']
-  })
+  } = await toJsonLd(mark)
+
   console.log('JSONLD', json)
   t.is(result.name, 'mark')
   t.is(result.wife.name, 'amber')
