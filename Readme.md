@@ -62,11 +62,20 @@ mark
   self: { '#': 'mark' } }
 
 JSONLD
-{ '@id': 'mark',
-  name: 'mark',
-  gender: 'male',
-  wife: { '@id': 'amber', name: 'amber', gender: 'female' },
-  self: { '@id': 'mark' } }
+{
+  "@context": "http://schema.org/",
+  "@id": "#mark",
+  "name": "mark",
+  "gender": "male",
+  "wife": {
+    "@id": "#amber",
+    "name": "amber",
+    "gender": "female"
+  },
+  "self": {
+    "@id": "#mark"
+  }
+}
 ```
 
 Note that it detects circular references and for such nodes already visited, it only returns the `@id` reference.
