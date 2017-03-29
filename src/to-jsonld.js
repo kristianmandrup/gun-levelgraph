@@ -12,11 +12,14 @@ function defaultLogger(opts) {
   }
 }
 
+let defaultGraphId = (id) => '#' + id
+
 let log
 
 export function createToLdGraph(opts) {
   let logger = opts.logger || defaultLogger
   log = logger(opts)
+  defaultGraphId = opts.graphId || defaultGraphId
   return {
     toLdGraph,
     toJsonLd
@@ -32,12 +35,7 @@ export async function toLdGraph(node, opts = {}) {
     return val
   }
 
-  let id = Gun.node.soul(val)
-  log('node id:', id)
-
-  let jsonld = {
-    '@id': id
-  }
+  let jsonld = {}
 
   // if root node
   if (isRootNode(opts)) {
@@ -45,6 +43,13 @@ export async function toLdGraph(node, opts = {}) {
     log('root node:', context)
     jsonld['@context'] = context
   }
+
+  let soul = Gun.node.soul(val)
+  log('node id:', soul)
+
+  let ldGraphId = opts.graphId || defaultGraphId
+  let id = ldGraphId(soul, opts)
+  jsonld['@id'] = id
 
   opts.visited = opts.visited || {
     ids: []
@@ -59,10 +64,12 @@ export async function toLdGraph(node, opts = {}) {
   let fullPath = (opts.path || '') + '/' + id
   delete opts['paths']
 
-  async function parse(field) {
+  // TODO: refactor
+  async function parse(field, node) {
     log('recurse', field)
     let fieldNode = node.path(field)
     opts.path = fullPath + '/' + field
+    opts.parentNode = node
     return await toLdGraph(fieldNode, opts)
   }
 
@@ -76,9 +83,13 @@ export async function toLdGraph(node, opts = {}) {
 
   let uniqFields = [...new Set(fields)]
 
+  if (opts.filter) {
+    uniqFields = filter(uniqFields)
+  }
+
   log('parse fields', uniqFields)
   for (let field of uniqFields) {
-    jsonld[field] = await parse(field)
+    jsonld[field] = await parse(field, node)
   }
 
   log('jsonld:', jsonld)

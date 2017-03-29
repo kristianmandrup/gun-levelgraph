@@ -40,7 +40,10 @@ test('savejsonld', async t => {
   let {
     result,
     json
-  } = await toJsonLd(mark)
+  } = await toJsonLd(mark, {
+    // schemaUrl: 'http://schema.org/',
+    // graphId: (id, opts) => graphId (string)
+  })
 
   console.log('JSONLD', json)
   t.is(result.name, 'mark')

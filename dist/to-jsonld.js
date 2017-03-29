@@ -33,11 +33,16 @@ function defaultLogger(opts) {
   };
 }
 
+var defaultGraphId = function defaultGraphId(id) {
+  return '#' + id;
+};
+
 var log = void 0;
 
 function createToLdGraph(opts) {
   var logger = opts.logger || defaultLogger;
   log = logger(opts);
+  defaultGraphId = opts.graphId || defaultGraphId;
   return {
     toLdGraph: toLdGraph,
     toJsonLd: toJsonLd
@@ -55,12 +60,7 @@ async function toLdGraph(node) {
     return val;
   }
 
-  var id = _gun2.default.node.soul(val);
-  log('node id:', id);
-
-  var jsonld = {
-    '@id': id
-  };
+  var jsonld = {};
 
   // if root node
   if (isRootNode(opts)) {
@@ -68,6 +68,13 @@ async function toLdGraph(node) {
     log('root node:', context);
     jsonld['@context'] = context;
   }
+
+  var soul = _gun2.default.node.soul(val);
+  log('node id:', soul);
+
+  var ldGraphId = opts.graphId || defaultGraphId;
+  var id = ldGraphId(soul, opts);
+  jsonld['@id'] = id;
 
   opts.visited = opts.visited || {
     ids: []
@@ -82,10 +89,12 @@ async function toLdGraph(node) {
   var fullPath = (opts.path || '') + '/' + id;
   delete opts['paths'];
 
-  async function parse(field) {
+  // TODO: refactor
+  async function parse(field, node) {
     log('recurse', field);
     var fieldNode = node.path(field);
     opts.path = fullPath + '/' + field;
+    opts.parentNode = node;
     return await toLdGraph(fieldNode, opts);
   }
 
@@ -99,6 +108,10 @@ async function toLdGraph(node) {
 
   var uniqFields = [].concat(_toConsumableArray(new Set(fields)));
 
+  if (opts.filter) {
+    uniqFields = filter(uniqFields);
+  }
+
   log('parse fields', uniqFields);
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
@@ -108,7 +121,7 @@ async function toLdGraph(node) {
     for (var _iterator = uniqFields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var field = _step.value;
 
-      jsonld[field] = await parse(field);
+      jsonld[field] = await parse(field, node);
     }
   } catch (err) {
     _didIteratorError = true;
