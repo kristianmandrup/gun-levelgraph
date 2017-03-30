@@ -118,6 +118,7 @@ function addDefaultOpts(opts) {
     iterateFields: iterateFields,
     nodeValue: nodeValue,
     recurseField: recurseField,
+    fieldValue: fieldValue,
     prepareOpts: prepareOpts
   }, opts);
 
@@ -194,6 +195,10 @@ async function nodeValue(node) {
   return await node.$val();
 }
 
+var fieldValue = function fieldValue(val) {
+  return val;
+};
+
 async function toLdGraph(node) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -204,7 +209,7 @@ async function toLdGraph(node) {
 
   if (!opts.isNode(nodeVal)) {
     log('field', nodeVal);
-    return nodeVal;
+    return opts.fieldValue(nodeVal, opts);
   }
 
   var _opts$buildNode = opts.buildNode(nodeVal, node, opts),

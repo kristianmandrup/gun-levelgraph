@@ -92,6 +92,7 @@ function addDefaultOpts(opts) {
     iterateFields,
     nodeValue,
     recurseField,
+    fieldValue,
     prepareOpts
   }, opts)
 
@@ -147,6 +148,8 @@ async function nodeValue(node) {
   return await node.$val()
 }
 
+const fieldValue = (val) => val
+
 export async function toLdGraph(node, opts = {}) {
   opts = Object.assign(addDefaultOpts(defaultOpts), opts)
   let log = opts.log
@@ -155,7 +158,7 @@ export async function toLdGraph(node, opts = {}) {
 
   if (!opts.isNode(nodeVal)) {
     log('field', nodeVal)
-    return nodeVal
+    return opts.fieldValue(nodeVal, opts)
   }
 
   let {

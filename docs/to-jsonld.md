@@ -259,6 +259,11 @@ By default uses `await node.$fields()` and a special `node._.paths` maintained b
 
 `getFields: (node, opts) => list of fields`
 
+### fieldValue
+
+By default is the identity function, ie. just returns `val`
+
+`fieldValue: (val, opts) => field value`
 
 ### fullPath
 
@@ -276,7 +281,6 @@ By defaults adds `visited.ids = []` if not yet set (ie, on first node visited)
 ### logging
 
 Set to `true` to enable logging
-
 
 ### paths
 
