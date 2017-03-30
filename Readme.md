@@ -43,7 +43,9 @@ let jsonld = await mark.$toJsonLd({
   // schemaUrl: 'http://www.people.com/schema'
   // filter: (fields, node, opts) => fields to process
   // graphId: (soul, opts) => id
-
+  // isNode: (val) => true|false
+  // isRootNode(node, opts) => true|false
+  // logging: true|false
   // Note:
   //   each node using putAt to add path nodes
   //   will contain paths list in metadata, ie. _.paths

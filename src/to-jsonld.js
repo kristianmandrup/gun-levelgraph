@@ -1,6 +1,6 @@
 import Gun from 'gun/gun'
 
-function isRootNode(opts) {
+function defaultIsRootNode(node, opts) {
   return !opts.visited || opts.visited.ids.length === 0
 }
 
@@ -26,19 +26,26 @@ export function createToLdGraph(opts) {
   }
 }
 
+function defaultIsNode(val, opts) {
+  return val._
+}
+
 export async function toLdGraph(node, opts = {}) {
   log = opts.log || log
 
+  let isNode = opts.isNode || defaultIsNode
+
   let val = await node.$val()
-  if (!val._) {
+  if (!isNode(val)) {
     log('field', val)
     return val
   }
 
   let jsonld = {}
+  let isRootNode = opts.isRootNode || defaultIsRootNode
 
   // if root node
-  if (isRootNode(opts)) {
+  if (isRootNode(node, opts)) {
     let context = opts.schemaUrl || 'http://schema.org/'
     log('root node:', context)
     jsonld['@context'] = context
@@ -84,7 +91,7 @@ export async function toLdGraph(node, opts = {}) {
   let uniqFields = [...new Set(fields)]
 
   if (opts.filter) {
-    uniqFields = filter(uniqFields)
+    uniqFields = filter(uniqFields, node, opts)
   }
 
   log('parse fields', uniqFields)
