@@ -15,7 +15,10 @@ var levelgraph = require('levelgraph');
 var jsonld = require('levelgraph-jsonld');
 
 var defaultOpts = {
-  dbPath: './gundb',
+  dbPath: './gundb'
+};
+
+var defaultJsonldOpts = {
   base: 'http://gun.io/base'
 };
 
@@ -38,9 +41,11 @@ var logger = function logger() {
 function buildOpts(opts) {
   opts = Object.assign(defaultOpts, opts);
 
+  var jsonldOpts = Object.assign(defaultJsonldOpts, opts.jsonldOpts);
+
   opts.levelDB = opts.levelDB || levelup(opts.dbPath);
   opts.lvGraphDb = opts.lvGraphDb || levelgraph(opts.levelDB);
-  opts.db = opts.db || jsonld(opts.lvGraphDb, opts);
+  opts.db = opts.db || jsonld(opts.lvGraphDb, jsonldOpts);
   opts.logger = opts.logger || logger;
   opts.log = opts.log || opts.logger(opts);
 

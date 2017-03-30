@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -26,10 +26,10 @@ function promisifyWithOpts(fun, obj, opts) {
 
   return new Promise(function (resolve, reject) {
     var cb = function cb(err, obj) {
-      console.log('promisifyWithOpts cb:', err, obj);
+      // console.log('promisifyWithOpts cb:', err, obj)
       err ? reject(err) : resolve(obj);
     };
-    console.log('promisifyWithOpts:', obj, opts, fun);
+    // console.log('promisifyWithOpts:', obj, opts, fun)
     fun.apply(undefined, [obj, opts, cb].concat(args));
   });
 }

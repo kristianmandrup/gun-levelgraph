@@ -30,8 +30,6 @@ function buildOpts(opts) {
 
   opts.levelDB = opts.levelDB || levelup(opts.dbPath)
   opts.lvGraphDb = opts.lvGraphDb || levelgraph(opts.levelDB)
-
-  console.log('jsonld db', jsonldOpts)
   opts.db = opts.db || jsonld(opts.lvGraphDb, jsonldOpts)
   opts.logger = opts.logger || logger
   opts.log = opts.log || opts.logger(opts)

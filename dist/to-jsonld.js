@@ -34,11 +34,18 @@ function visit(id, opts) {
   opts.visited.ids.push(id);
 }
 
+var defaultCtx = function defaultCtx(opts) {
+  return {
+    '@vocab': opts.schemaUrl
+  };
+};
+
 function addContext(jsonld, node, opts) {
   if (!isFirstVisit(node, opts)) return jsonld;
 
-  var context = opts.schemaUrl || 'http://schema.org/';
-  opts.log('root node:', context);
+  var nodeCtx = node.context ? node.context() : false;
+  var context = nodeCtx || opts.context || defaultCtx(opts);
+  opts.log('context:', context);
   jsonld['@context'] = context;
   return jsonld;
 }
@@ -89,21 +96,25 @@ var buildNode = function buildNode(nodeVal, node, opts) {
   var nodeId = opts.nodeId(nodeVal);
   opts.log('node id:', nodeId);
 
-  var id = opts.graphId(nodeId, opts);
+  var fullPath = opts.buildfullPath(nodeId, opts);
+
+  var id = opts.graphId(nodeId, fullPath, opts);
   jsonld['@id'] = id;
 
   return {
     jsonld: jsonld,
-    nodeId: nodeId
+    nodeId: nodeId,
+    fullPath: fullPath
   };
 };
 
-var graphId = function graphId(id) {
-  return '#' + id;
+var graphId = function graphId(id, fullPath, opts) {
+  return [opts.schemaUrl, id].join('/');
 };
 
 function addDefaultOpts(opts) {
   opts = Object.assign({
+    schemaUrl: 'http://xmlns.com/foaf/0.1',
     isFirstVisit: isFirstVisit,
     wasVisited: wasVisited,
     visit: visit,
@@ -114,7 +125,7 @@ function addDefaultOpts(opts) {
     logger: logger,
     nodeId: nodeId,
     getFields: getFields,
-    fullPath: fullPath,
+    buildfullPath: buildfullPath,
     iterateFields: iterateFields,
     nodeValue: nodeValue,
     recurseField: recurseField,
@@ -137,8 +148,8 @@ function createFunctions(opts) {
   };
 }
 
-var fullPath = function fullPath(id, opts) {
-  var path = (opts.path || '') + '/' + id;
+var buildfullPath = function buildfullPath(id, opts) {
+  var path = opts.path ? [opts.path, id].join('/') : id;
   delete opts.path;
   return path;
 };
@@ -150,17 +161,15 @@ var prepareOpts = function prepareOpts(opts) {
   return opts;
 };
 
-async function recurseField(field, node, fullPath, opts) {
+async function recurseField(field, node, opts) {
   opts.log('recurse', field);
   var fieldNode = node.path(field);
-  opts.path = fullPath + '/' + field;
+  opts.path = opts.fullPath + '/' + field;
   opts.parentNode = node;
   return await toLdGraph(fieldNode, opts);
 }
 
 async function iterateFields(jsonld, node, nodeId, opts) {
-  var fullPath = opts.fullPath(nodeId, opts);
-
   var fields = await opts.getFields(node, opts);
 
   opts.log('parse fields', fields);
@@ -172,7 +181,7 @@ async function iterateFields(jsonld, node, nodeId, opts) {
     for (var _iterator = fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var field = _step.value;
 
-      jsonld[field] = await opts.recurseField(field, node, fullPath, opts);
+      jsonld[field] = await opts.recurseField(field, node, opts);
     }
   } catch (err) {
     _didIteratorError = true;
@@ -220,7 +229,10 @@ async function toLdGraph(node) {
 
   var _opts$buildNode = opts.buildNode(nodeVal, node, opts),
       jsonld = _opts$buildNode.jsonld,
+      fullPath = _opts$buildNode.fullPath,
       nodeId = _opts$buildNode.nodeId;
+
+  opts.fullPath = fullPath;
 
   log('build node', jsonld);
   opts.$id = jsonld['@id'];
