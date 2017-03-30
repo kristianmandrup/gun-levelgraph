@@ -119,6 +119,7 @@ function addDefaultOpts(opts) {
     nodeValue: nodeValue,
     recurseField: recurseField,
     fieldValue: fieldValue,
+    referenceNode: referenceNode,
     prepareOpts: prepareOpts
   }, opts);
 
@@ -195,6 +196,11 @@ async function nodeValue(node) {
   return await node.$val();
 }
 
+var referenceNode = function referenceNode(jsonld, opts) {
+  jsonld['@type'] = '@id';
+  return jsonld;
+};
+
 var fieldValue = function fieldValue(val) {
   return val;
 };
@@ -223,7 +229,7 @@ async function toLdGraph(node) {
 
   if (opts.wasVisited(nodeId, opts)) {
     log('already visited:', jsonld);
-    return jsonld;
+    return opts.referenceNode(jsonld);
   }
 
   opts.visit(nodeId, opts);

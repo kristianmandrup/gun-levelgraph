@@ -1,11 +1,20 @@
 const levelup = require('levelup')
 const levelgraph = require('levelgraph')
 const jsonld = require('levelgraph-jsonld')
-const promisify = require('./promisify')
+
+import promisify from './promisify'
 
 const defaultOpts = {
   dbPath: './gundb',
   base: 'http://gun.io/base'
+}
+
+const logger = (opts = {}) => {
+  return function log(...args) {
+    if (opts.logging) {
+      console.log('toLdGraph:', ...args)
+    }
+  }
 }
 
 function buildOpts(opts) {
@@ -14,6 +23,9 @@ function buildOpts(opts) {
   opts.levelDB = opts.levelDB || levelup(opts.dbPath)
   opts.lvGraphDb = opts.lvGraphDb || levelgraph(opts.levelDB)
   opts.db = opts.db || jsonld(opts.lvGraphDb, opts)
+  opts.logger = opts.logger || logger
+  opts.log = opts.log || opts.logger(opts)
+
   return opts
 }
 
@@ -26,13 +38,20 @@ export function createSaveToLvGraph(_opts) {
     if (!db) {
       throw new Error('saveToLvGraph: missing db option')
     }
+    opts.log('put', db.jsonld, jsonld)
     db.jsonld.put(jsonld, cb, opts)
+  }
+
+  const $saveToLvGraph = function (jsonld, cb, opts) {
+    opts = Object.assign(dbOptions, opts)
+    return promisify(saveToLvGraph, jsonld, opts)
   }
 
   return {
     dbGet: dbOptions.db.jsonld.get,
     dbOptions,
-    saveToLvGraph
+    saveToLvGraph,
+    $saveToLvGraph
   }
 }
 
@@ -48,7 +67,7 @@ export function saveToLvGraph(jsonld, cb, opts) {
 }
 
 export function $saveToLvGraph(jsonld, cb, opts) {
-  return promisify(saveToJsonLd, jsonld, opts)
+  return promisify(saveToLvGraph, jsonld, opts)
 }
 
 export function addSaveToLvGraph(chain) {

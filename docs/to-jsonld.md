@@ -272,6 +272,12 @@ Can be used to build the `@context`
 
 `fullPath: (id, opts) => full path`
 
+### referenceNode
+
+Create a reference node. By default adds a `@type: '@id'` field.
+
+`referenceNode: (jsonld, opts) => jsonld`
+
 ### prepareOpts
 
 By defaults adds `visited.ids = []` if not yet set (ie, on first node visited)

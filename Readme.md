@@ -8,9 +8,10 @@ Conversion to JsonLd format is super flexible and works!
 
 The following default functions need to be fixed however:
 
-- Make default `addContext` and `graphId` functions:
+- Tweak default `addContext`, `graphId` and `referenceNode` functions:
   - add valid JsonLd `@context` on each node
   - add valid JsonLd `@id` on each node
+  - make sure valid references
 
 ## Install
 
