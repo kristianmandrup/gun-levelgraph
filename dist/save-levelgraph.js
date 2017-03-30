@@ -17,25 +17,31 @@ var defaultOpts = {
   base: 'http://gun.io/base'
 };
 
-function buildOpts(_opts) {
-  _opts = Object.assign(defaultOpts, _opts);
+function buildOpts(opts) {
+  opts = Object.assign(defaultOpts, opts);
 
-  _opts.levelDB = _opts.levelDB || levelup(_opts.dbPath);
-  _opts.lvGraphDb = _opts.lvGraphDb || levelgraph(_opts.levelDB);
-  _opts.db = _opts.db || jsonld(opts.lvGraphDb, opts);
-  return _opts;
+  opts.levelDB = opts.levelDB || levelup(opts.dbPath);
+  opts.lvGraphDb = opts.lvGraphDb || levelgraph(opts.levelDB);
+  opts.db = opts.db || jsonld(opts.lvGraphDb, opts);
+  return opts;
 }
 
 function createSaveToLvGraph(_opts) {
-  _opts = buildOpts(_opts);
+  var dbOptions = buildOpts(_opts);
 
-  return function saveToLvGraph(jsonld, cb, opts) {
-    opts = Object.assign(_opts, opts);
+  var saveToLvGraph = function saveToLvGraph(jsonld, cb, opts) {
+    opts = Object.assign(dbOptions, opts);
     var db = opts.db;
     if (!db) {
       throw new Error('saveToLvGraph: missing db option');
     }
-    jsonld.put(jsonld, cb, opts);
+    db.jsonld.put(jsonld, cb, opts);
+  };
+
+  return {
+    dbGet: dbOptions.db.jsonld.get,
+    dbOptions: dbOptions,
+    saveToLvGraph: saveToLvGraph
   };
 }
 
@@ -66,5 +72,5 @@ function addSaveToLvGraph(chain) {
   return chain;
 }
 
-exports.default = addSaveToJsonLd;
+exports.default = addSaveToLvGraph;
 //# sourceMappingURL=save-levelgraph.js.map

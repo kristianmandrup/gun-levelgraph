@@ -5,7 +5,12 @@ Interop layer between [Gun](gun.js.org) and [LevelGraph](https://github.com/mcol
 ## Status
 
 Conversion to JsonLd format is super flexible and works!
-See *Todo* at the bottom for the roadmap. Please help out ;)
+
+The following default functions need to be fixed however:
+
+- Make default `addContext` and `graphId` functions:
+  - add valid JsonLd `@context` on each node
+  - add valid JsonLd `@id` on each node
 
 ## Install
 
@@ -38,6 +43,12 @@ Try `ava test`
 
 - Test LevelGraph save functions
 - Load JsonLd object into Gun graph for a full cycle
+
+### Save Gun node to LevelGraph
+
+- Fix `addContext` and `graphId` functions to:
+  - add valid JsonLd `@context` on each node
+  - add valid JsonLd `@id` on each node
 
 ## Licence
 

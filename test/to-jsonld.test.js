@@ -3,6 +3,8 @@ import test from 'ava'
 import {
   createFunctions
 } from '../src/to-jsonld'
+
+// TODO: deprecated! use chain-gun instead
 import chain from 'gun-edge'
 chain(Gun)
 const gun = Gun();
