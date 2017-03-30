@@ -40,10 +40,10 @@ var defaultCtx = function defaultCtx(opts) {
   };
 };
 
-function addContext(jsonld, node, opts) {
+function addContext(jsonld, node, nodeVal, opts) {
   if (!isFirstVisit(node, opts)) return jsonld;
 
-  var nodeCtx = node.context ? node.context() : false;
+  var nodeCtx = node.context ? node.context(nodeVal, opts) : false;
   var context = nodeCtx || opts.context || defaultCtx(opts);
   opts.log('context:', context);
   jsonld['@context'] = context;
@@ -91,7 +91,7 @@ var buildNode = function buildNode(nodeVal, node, opts) {
   var jsonld = {};
 
   // if context node
-  jsonld = opts.addContext(jsonld, node, opts);
+  jsonld = opts.addContext(jsonld, node, nodeVal, opts);
 
   var nodeId = opts.nodeId(nodeVal);
   opts.log('node id:', nodeId);

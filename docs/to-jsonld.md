@@ -166,14 +166,15 @@ This means that with a `@base: 'http://example.org'` and `@id: 'mark'` the full 
 #### @context
 
 Can be an object or an URI string. Currently by default calculated as follows.
-You can add a `Gun.chain` method `context()` which returns the context of a given node.
+You can add a `Gun.chain` method `context` which returns the context of a given node.
+As an example you could use the node `type` to lookup the schema/context to use or iterate the fields in `nodeVal` etc.
 
 ```js
-  let nodeCtx = node.context ? node.context() : false
-  let context = nodeCtx || opts.context || defaultCtx()
+  let nodeCtx = node.context ? node.context(nodeVal, opts) : false
+  let context = nodeCtx || opts.context || defaultCtx(opts)
 ```
 
-You need to use the `@context` to specify the types of field allowed:
+You can use the `@context` to specify the types of nodes in the graph:
 
 ```js
 {
@@ -331,7 +332,7 @@ By default adds `id` to `opts.visited.ids`
 By default adds a `@context` property if this is the first node visited
 The context is set to `schemaUrl`
 
-`addContext(jsonld, node, opts) => return jsonld`
+`addContext(jsonld, node, nodeVal, opts) => return jsonld`
 
 ### buildNode
 

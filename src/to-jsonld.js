@@ -24,10 +24,10 @@ const defaultCtx = function (opts) {
   }
 }
 
-function addContext(jsonld, node, opts) {
+function addContext(jsonld, node, nodeVal, opts) {
   if (!isFirstVisit(node, opts)) return jsonld
 
-  let nodeCtx = node.context ? node.context() : false
+  let nodeCtx = node.context ? node.context(nodeVal, opts) : false
   let context = nodeCtx || opts.context || defaultCtx(opts)
   opts.log('context:', context)
   jsonld['@context'] = context
@@ -67,7 +67,7 @@ const buildNode = (nodeVal, node, opts) => {
   let jsonld = {}
 
   // if context node
-  jsonld = opts.addContext(jsonld, node, opts)
+  jsonld = opts.addContext(jsonld, node, nodeVal, opts)
 
   let nodeId = opts.nodeId(nodeVal)
   opts.log('node id:', nodeId)
