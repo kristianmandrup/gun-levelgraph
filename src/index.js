@@ -1,9 +1,7 @@
-import addToJsonLd from './to-jsonld'
-
 export * from './to-jsonld'
-export createForLvGraph from './levelgraph'
-
 export {
-  addToJsonLd,
-  createForLvGraph
+  default as createForLvGraph
 }
+from './levelgraph'
+
+export default createForLvGraph

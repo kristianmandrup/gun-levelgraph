@@ -1,8 +1,5 @@
 import test from 'ava'
-
-import {
-  createSaveToLvGraph
-} from '../../src/save-levelgraph'
+import createForLvGraph from '../../src/levelgraph'
 
 var manu = {
   "@context": {
@@ -53,13 +50,15 @@ var manuComplex = {
 };
 
 let {
-  dbGet,
-  saveToLvGraph
-} = createSaveToLvGraph()
-
+  commands
+} = createForLvGraph()
+let {
+  lvGet,
+  lvPut
+} = commands
 
 function doQuery(id, queryOpts, t) {
-  dbGet(id, queryOpts, function (err, obj) {
+  lvGet(id, queryOpts, function (err, obj) {
     if (err) {
       throw err
     }
@@ -74,7 +73,7 @@ function doQuery(id, queryOpts, t) {
 test.cb('saveToLvGraph', t => {
   let node = manuComplex
 
-  saveToLvGraph(node, function (err, obj) {
+  lvPut(node, function (err, obj) {
     if (err) {
       throw err
     }

@@ -3,6 +3,10 @@ const levelgraph = require('levelgraph')
 const jsonld = require('levelgraph-jsonld')
 
 import {
+  toJsonLd
+} from './to-jsonld'
+
+import {
   promisify,
   promisify2,
   promisify3
@@ -44,7 +48,7 @@ export function createForLvGraph(_opts) {
   const jsonld = db.jsonld
 
   // graphdb.jsonld.put = function(obj, options, callback)
-  const lvPut = function (jsonld, cb, opts = {}) {
+  const lvPut = function (jsonldObj, cb, opts = {}) {
     opts = Object.assign(dbOptions, opts)
     const db = opts.db
     const jsonld = opts.jsonld || db.jsonld
@@ -52,9 +56,9 @@ export function createForLvGraph(_opts) {
     if (!db) {
       throw new Error('lvPut: no db specified')
     }
-    opts.log('lvPut', jsonld, opts)
+    opts.log('lvPut', jsonldObj, opts)
     // graphdb.jsonld.put = function(obj, options, callback)
-    db.jsonld.put(jsonld, opts, cb)
+    db.jsonld.put(jsonldObj, opts, cb)
   }
 
   //  graphdb.jsonld.put = function(obj, options, callback) {
@@ -169,10 +173,12 @@ export function createForLvGraph(_opts) {
   }
 
   function addLvGraph(chain) {
-    function calcJsonLd(node, opts) {
+
+    async function calcJsonLd(node, opts) {
+      let result = await toJsonLd(node, opts.jsonld)
       let {
         json
-      } = await toJsonLd(node, opts.jsonld)
+      } = result
       return json
     }
 
@@ -199,13 +205,13 @@ export function createForLvGraph(_opts) {
       }
     }
 
-    chain.lgPut = function (cb, opts) {
-      let jsonld = calcJsonLd(this)
+    chain.lgPut = async function (cb, opts) {
+      let jsonld = await calcJsonLd(this)
       return lvPut(jsonld, cb, opts)
     }
 
-    chain.$lvPut = function (opts) {
-      let jsonld = calcJsonLd(this)
+    chain.$lvPut = async function (opts) {
+      let jsonld = await calcJsonLd(this)
       return $lvPut(jsonld, opts)
     }
 
