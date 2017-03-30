@@ -2,7 +2,10 @@ const levelup = require('levelup')
 const levelgraph = require('levelgraph')
 const jsonld = require('levelgraph-jsonld')
 
-import promisify from './promisify'
+import {
+  promisify,
+  promisifyWithOpts
+} from './promisify'
 
 const defaultOpts = {
   dbPath: './gundb',
@@ -42,13 +45,20 @@ export function createSaveToLvGraph(_opts) {
     db.jsonld.put(jsonld, cb, opts)
   }
 
-  const $saveToLvGraph = function (jsonld, cb, opts) {
+  const $saveToLvGraph = function (jsonld, opts) {
     opts = Object.assign(dbOptions, opts)
     return promisify(saveToLvGraph, jsonld, opts)
   }
 
+  const dbGet = dbOptions.db.jsonld.get
+
+  const $dbGet = function (queryId, queryOpts) {
+    return promisifyWithOpts(dbGet, queryId, queryOpts)
+  }
+
   return {
-    dbGet: dbOptions.db.jsonld.get,
+    dbGet,
+    $dbGet,
     dbOptions,
     saveToLvGraph,
     $saveToLvGraph

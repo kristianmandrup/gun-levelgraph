@@ -10,10 +10,6 @@ exports.addSaveToLvGraph = addSaveToLvGraph;
 
 var _promisify = require('./promisify');
 
-var _promisify2 = _interopRequireDefault(_promisify);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 var levelup = require('levelup');
 var levelgraph = require('levelgraph');
 var jsonld = require('levelgraph-jsonld');
@@ -64,13 +60,20 @@ function createSaveToLvGraph(_opts) {
     db.jsonld.put(jsonld, cb, opts);
   };
 
-  var $saveToLvGraph = function $saveToLvGraph(jsonld, cb, opts) {
+  var $saveToLvGraph = function $saveToLvGraph(jsonld, opts) {
     opts = Object.assign(dbOptions, opts);
-    return (0, _promisify2.default)(saveToLvGraph, jsonld, opts);
+    return (0, _promisify.promisify)(saveToLvGraph, jsonld, opts);
+  };
+
+  var dbGet = dbOptions.db.jsonld.get;
+
+  var $dbGet = function $dbGet(queryId, queryOpts) {
+    return (0, _promisify.promisifyWithOpts)(dbGet, queryId, queryOpts);
   };
 
   return {
-    dbGet: dbOptions.db.jsonld.get,
+    dbGet: dbGet,
+    $dbGet: $dbGet,
     dbOptions: dbOptions,
     saveToLvGraph: saveToLvGraph,
     $saveToLvGraph: $saveToLvGraph
@@ -89,7 +92,7 @@ function saveToLvGraph(jsonld, cb, opts) {
 }
 
 function $saveToLvGraph(jsonld, cb, opts) {
-  return (0, _promisify2.default)(saveToLvGraph, jsonld, opts);
+  return (0, _promisify.promisify)(saveToLvGraph, jsonld, opts);
 }
 
 function addSaveToLvGraph(chain) {

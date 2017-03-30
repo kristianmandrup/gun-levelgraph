@@ -37,28 +37,21 @@ let sampleManu = `{
   "homepage": "http://manu.sporny.org/"
 }`
 
-function makeQuery(dbGet, {
+async function makeQuery($dbGet, {
   queryId,
   context,
   t
 }) {
-  console.log('makeQuery')
+  console.log('makeQuery', queryId, context)
   let opts = {
     '@context': context
   }
 
-  dbGet(queryId, opts, function (err, obj) {
-    if (err) {
-      throw err
-    }
-    console.log('GET mark', queryId, obj)
-
-    if (obj) {
-      t.is(obj.name, 'mark')
-    } else {
-      throw new Error(`No object found for ${queryId}`)
-    }
-  });
+  try {
+    return await $dbGet(queryId, opts)
+  } catch (err) {
+    throw err
+  }
 }
 
 
@@ -71,17 +64,22 @@ test('save Gun graph to LvGraph', async t => {
   //   add valid @id on each node
 
   console.log('jsonld', jsonld)
+  let queryId = jsonld['@id'] || '#mark'
+  let context = jsonld['@context'] || "http://schema.org/"
+
+  let queryOpts = {
+    queryId,
+    context
+  }
 
   let {
     dbGet,
+    $dbGet,
     saveToLvGraph,
     $saveToLvGraph
   } = createSaveToLvGraph()
 
-  let queryId = jsonld['@id']
-  let context = jsonld['@context']
-
-  console.log('save', jsonld)
+  console.log('save', jsonld, queryOpts)
   try {
     let result = await $saveToLvGraph(jsonld)
     // do something after the obj is inserted
@@ -92,11 +90,16 @@ test('save Gun graph to LvGraph', async t => {
     console.log('mark was PUT', result)
     t.is(result.name, 'mark')
 
-    makeQuery(dbGet, {
-      queryId,
-      context,
-      t
-    })
+    console.log('make query', queryOpts)
+
+    let queryRes = await makeQuery($dbGet, queryOpts)
+    console.log('GOT mark', queryId, queryRes)
+
+    if (queryRes) {
+      t.is(queryRes.name, 'mark')
+    } else {
+      throw new Error(`Not match for query: ${queryId} in ${queryOpts.context}`)
+    }
 
   } catch (err) {
     console.log('save err', err)
