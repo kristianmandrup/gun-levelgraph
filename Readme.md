@@ -41,6 +41,8 @@ console.log('mark', val)
 
 let jsonld = await mark.$toJsonLd({
   // schemaUrl: 'http://www.people.com/schema'
+  // filter: (fields, node, opts) => fields to process
+  // graphId: (soul, opts) => id
 
   // Note:
   //   each node using putAt to add path nodes
