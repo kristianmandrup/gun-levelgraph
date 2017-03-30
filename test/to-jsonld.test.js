@@ -34,7 +34,7 @@ test('savejsonld', async t => {
     toLdGraph,
     toJsonLd
   } = createToLdGraph({
-    // logging: true
+    logging: true
   })
 
   let {

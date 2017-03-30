@@ -40,16 +40,7 @@ let val = await mark.$value()
 console.log('mark', val)
 
 let jsonld = await mark.$toJsonLd({
-  // schemaUrl: 'http://www.people.com/schema'
-  // filter: (fields, node, opts) => fields to process
-  // graphId: (soul, opts) => id
-  // isNode: (val) => true|false
-  // isRootNode(node, opts) => true|false
-  // logging: true|false
-  // Note:
-  //   each node using putAt to add path nodes
-  //   will contain paths list in metadata, ie. _.paths
-  // paths: ['wife', 'self']
+  // options
 })
 console.log('JSONLD', jsonld)
 t.is(jsonld.name, 'mark')
@@ -102,6 +93,109 @@ db.jsonld.put(jsonld, function(err, obj) {
   console.log('SAVED', obj)
 }
 ```
+
+## Options for fine control
+
+### schemaUrl
+
+`schemaUrl: 'http://www.people.com/schema'`
+
+### filter
+
+```js
+filter: (fields, node, opts) => {
+  // list of fields to process
+  return []
+}
+```
+
+### graphId
+
+`graphId: (soul, opts) => id`
+
+### nodeId
+
+By default gets the gun "soul": `Gun.node.soul(nodeObj)`
+
+`nodeId: (nodeObj) => id`
+
+### isNode
+
+By default checks if node has a `_` property
+
+`isNode: (val) => true|false`
+
+### isFirstVisit
+
+By default checks if `opts.visited` is empty
+
+`isFirstVisit: (node, opts) => true|false`
+
+### wasVisited
+
+By default checks if `id` is included in `opts.visited.ids` list
+
+`wasVisited: (id, opts) => true|false`
+
+### visit
+
+By default adds `id` to `opts.visited.ids`
+
+`visit: (id, opts)`
+
+### addContext
+
+By default adds a `@context` property if this is the first node visited
+The context is set to `schemaUrl`
+
+`addContext(jsonld, node, opts) => return jsonld`
+
+### buildNode
+
+Builds the base `jsonld` node for this iteration, including `@id` and optional `@context` properties. Also returns the `nodeId`.
+
+`buildNode: (nodeVal, node, opts) => return {jsonld, nodeId}`
+
+### logger
+
+Returns a log function
+
+`logger: (opts) => log function`
+
+### getFields
+
+Gets the list of fields of the node.
+By default uses `await node.$fields()` and a special `node._.paths` maintained by utility function `.putAt`
+
+`getFields: (node, opts) => list of fields`
+
+
+### fullPath
+
+Builds the full path, by default using current `opts.path` and adding the `id`.
+Can be used to build the `@context`
+
+`fullPath: (id, opts) => full path`
+
+### prepareOpts
+
+By defaults adds `visited.ids = []` if not yet set (ie, on first node visited)
+
+`prepareOpts: (opts) => prepare opts Object`
+
+### logging
+
+Set to `true` to enable logging
+
+
+### paths
+
+Set to a list of special paths to iterate on this node (See `putAt` hack above)
+
+## TODO
+
+- Use `chain-gun` and `future-gun` instead of deprecated `gun-edge`
+- Use better chaining mechanism, similar to `chain-gun` to avoid importing `Gun`
 
 ## Licence
 

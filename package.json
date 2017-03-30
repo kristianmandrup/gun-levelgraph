@@ -1,7 +1,7 @@
 {
   "name": "gun-levelgraph",
-  "version": "0.1.1",
-  "description": "Gun to LevelGraph/triplets translation",
+  "version": "0.1.2",
+  "description": "Gun to LevelGraph JsonLD conversion. Lets you store Gun graph as triplets in LevelGraph",
   "main": "dist/to-jsonld.js",
   "scripts": {
     "test": "ava",

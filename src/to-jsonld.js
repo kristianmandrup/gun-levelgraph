@@ -1,85 +1,33 @@
 import Gun from 'gun/gun'
 
-function defaultIsRootNode(node, opts) {
-  return !opts.visited || opts.visited.ids.length === 0
+function nodeId(nodeObj) {
+  return Gun.node.soul(nodeObj)
 }
 
-function defaultLogger(opts) {
-  return function log(...args) {
-    if (opts.logging) {
-      console.log('toLdGraph:', ...args)
-    }
-  }
-}
-
-let defaultGraphId = (id) => '#' + id
-
-let log
-
-export function createToLdGraph(opts) {
-  let logger = opts.logger || defaultLogger
-  log = logger(opts)
-  defaultGraphId = opts.graphId || defaultGraphId
-  return {
-    toLdGraph,
-    toJsonLd
-  }
-}
-
-function defaultIsNode(val, opts) {
+function isNode(val, opts) {
   return val._
 }
 
-export async function toLdGraph(node, opts = {}) {
-  log = opts.log || log
+function wasVisited(id, opts) {
+  let ids = opts.visited.ids
+  opts.log('visited ids', ids, '==', id)
+  return ids.indexOf(id) >= 0
+}
 
-  let isNode = opts.isNode || defaultIsNode
-
-  let val = await node.$val()
-  if (!isNode(val)) {
-    log('field', val)
-    return val
-  }
-
-  let jsonld = {}
-  let isRootNode = opts.isRootNode || defaultIsRootNode
-
-  // if root node
-  if (isRootNode(node, opts)) {
-    let context = opts.schemaUrl || 'http://schema.org/'
-    log('root node:', context)
-    jsonld['@context'] = context
-  }
-
-  let soul = Gun.node.soul(val)
-  log('node id:', soul)
-
-  let ldGraphId = opts.graphId || defaultGraphId
-  let id = ldGraphId(soul, opts)
-  jsonld['@id'] = id
-
-  opts.visited = opts.visited || {
-    ids: []
-  }
-
-  if (opts.visited.ids.indexOf(id) >= 0) {
-    log('already visited:', jsonld)
-    return jsonld
-  }
-
+function visit(id, opts) {
   opts.visited.ids.push(id)
-  let fullPath = (opts.path || '') + '/' + id
-  delete opts['paths']
+}
 
-  // TODO: refactor
-  async function parse(field, node) {
-    log('recurse', field)
-    let fieldNode = node.path(field)
-    opts.path = fullPath + '/' + field
-    opts.parentNode = node
-    return await toLdGraph(fieldNode, opts)
-  }
+function addContext(jsonld, node, opts) {
+  if (!isFirstVisit(node, opts)) return jsonld
 
+  let context = opts.schemaUrl || 'http://schema.org/'
+  opts.log('root node:', context)
+  jsonld['@context'] = context
+  return jsonld
+}
+
+async function getFields(node, opts) {
   let fields = await node.$fields()
   let nodePaths = opts.paths || []
   nodePaths = nodePaths.concat(node._.paths || [])
@@ -91,12 +39,133 @@ export async function toLdGraph(node, opts = {}) {
   let uniqFields = [...new Set(fields)]
 
   if (opts.filter) {
-    uniqFields = filter(uniqFields, node, opts)
+    uniqFields = opts.filter(uniqFields, node, opts)
+  }
+  return uniqFields
+}
+
+const isFirstVisit = (node, opts) => {
+  return !opts.visited || opts.visited.ids.length === 0
+}
+
+const logger = (opts = {}) => {
+  return function log(...args) {
+    if (opts.logging) {
+      console.log('toLdGraph:', ...args)
+    }
+  }
+}
+
+const buildNode = (nodeVal, node, opts) => {
+  let jsonld = {}
+
+  // if context node
+  jsonld = opts.addContext(jsonld, node, opts)
+
+  let nodeId = opts.nodeId(nodeVal)
+  opts.log('node id:', nodeId)
+
+  let id = opts.graphId(nodeId, opts)
+  jsonld['@id'] = id
+
+  return {
+    jsonld,
+    nodeId
+  }
+}
+
+const graphId = (id) => '#' + id
+
+function addDefaultOpts(opts) {
+  opts = Object.assign({
+    isFirstVisit,
+    wasVisited,
+    visit,
+    addContext,
+    graphId,
+    isNode,
+    buildNode,
+    logger,
+    nodeId,
+    getFields,
+    fullPath,
+    prepareOpts
+  }, opts)
+
+  opts.log = opts.log || opts.logger(opts)
+  return opts
+}
+
+
+let defaultOpts = {}
+
+export function createToLdGraph(opts) {
+  defaultOpts = addDefaultOpts(opts)
+  return {
+    toLdGraph,
+    toJsonLd
+  }
+}
+
+const fullPath = (id, opts) => {
+  let path = (opts.path || '') + '/' + id
+  delete opts.path
+  return path
+}
+
+const prepareOpts = (opts) => {
+  opts.visited = opts.visited || {
+    ids: []
+  }
+  return opts
+}
+
+
+// TODO: refactor
+async function parse(field, node, fullPath, opts) {
+  opts.log('recurse', field)
+  let fieldNode = node.path(field)
+  opts.path = fullPath + '/' + field
+  opts.parentNode = node
+  return await toLdGraph(fieldNode, opts)
+}
+
+
+export async function toLdGraph(node, opts = {}) {
+  opts = Object.assign(addDefaultOpts(defaultOpts), opts)
+  let log = opts.log
+
+  let nodeVal = await node.$val()
+
+  if (!opts.isNode(nodeVal)) {
+    log('field', nodeVal)
+    return nodeVal
   }
 
-  log('parse fields', uniqFields)
-  for (let field of uniqFields) {
-    jsonld[field] = await parse(field, node)
+  let {
+    jsonld,
+    nodeId
+  } = opts.buildNode(nodeVal, node, opts)
+
+  log('build node', jsonld)
+  opts.$id = jsonld['@id']
+
+  opts = opts.prepareOpts(opts)
+
+  if (opts.wasVisited(nodeId, opts)) {
+    log('already visited:', jsonld)
+    return jsonld
+  }
+
+  opts.visit(nodeId, opts)
+
+  let fullPath = opts.fullPath(nodeId, opts)
+
+  let fields = await opts.getFields(node, opts)
+
+  log('parse fields', fields)
+  for (let field of fields) {
+    jsonld[field] = await parse(field, node, fullPath, opts)
   }
 
   log('jsonld:', jsonld)
