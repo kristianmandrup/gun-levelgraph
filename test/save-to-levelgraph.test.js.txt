@@ -2,7 +2,7 @@ import test from 'ava'
 
 import {
   db
-} from '../src/levelgraph'
+} from '../src/save-levelgraph'
 
 var manu = {
   "@context": {
