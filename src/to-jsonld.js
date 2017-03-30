@@ -24,7 +24,11 @@ const defaultCtx = function (opts) {
   }
 }
 
-function addContext(jsonld, node, nodeVal, opts) {
+function addContext(jsonld, {
+  node,
+  nodeVal,
+  opts
+}) {
   if (!isFirstVisit(node, opts)) return jsonld
 
   let nodeCtx = node.context ? node.context(nodeVal, opts) : false
@@ -46,7 +50,10 @@ async function getFields(node, opts) {
   let uniqFields = [...new Set(fields)]
 
   if (opts.filter) {
-    uniqFields = opts.filter(uniqFields, node, opts)
+    uniqFields = opts.filter(uniqFields, {
+      node,
+      opts
+    })
   }
   return uniqFields
 }
@@ -63,18 +70,30 @@ const logger = (opts = {}) => {
   }
 }
 
-const buildNode = (nodeVal, node, opts) => {
+const buildNode = (nodeVal, {
+  node,
+  opts
+}) => {
   let jsonld = {}
 
   // if context node
-  jsonld = opts.addContext(jsonld, node, nodeVal, opts)
+  jsonld = opts.addContext(jsonld, {
+    node,
+    nodeVal,
+    opts
+  })
 
   let nodeId = opts.nodeId(nodeVal)
   opts.log('node id:', nodeId)
 
   let fullPath = opts.buildfullPath(nodeId, opts)
 
-  let id = opts.graphId(nodeId, fullPath, opts)
+  let id = opts.graphId(nodeId, {
+    node,
+    nodeVal,
+    fullPath,
+    opts
+  })
   jsonld['@id'] = id
 
   return {
@@ -84,7 +103,11 @@ const buildNode = (nodeVal, node, opts) => {
   }
 }
 
-const graphId = (id, fullPath, opts) => {
+const graphId = (id, {
+  node,
+  fullPath,
+  opts
+}) => {
   return [opts.schemaUrl, id].join('/')
 }
 
@@ -138,20 +161,31 @@ const prepareOpts = (opts) => {
   return opts
 }
 
-async function recurseField(field, node, opts) {
+async function recurseField(field, {
+  node,
+  opts
+}) {
   opts.log('recurse', field)
   let fieldNode = node.path(field)
   opts.path = opts.fullPath + '/' + field
   opts.parentNode = node
-  return await toLdGraph(fieldNode, opts)
+  return await recurse(fieldNode, opts)
 }
 
-async function iterateFields(jsonld, node, nodeId, opts) {
+async function iterateFields(jsonld, {
+  node,
+  nodeId,
+  opts
+}) {
   let fields = await opts.getFields(node, opts)
 
   opts.log('parse fields', fields)
   for (let field of fields) {
-    jsonld[field] = await opts.recurseField(field, node, opts)
+    jsonld[field] = await opts.recurseField(field, {
+      node,
+      opts,
+      recurse: toLdGraph
+    })
   }
   return jsonld
 }
@@ -182,7 +216,10 @@ export async function toLdGraph(node, opts = {}) {
     jsonld,
     fullPath,
     nodeId
-  } = opts.buildNode(nodeVal, node, opts)
+  } = opts.buildNode(nodeVal, {
+    node,
+    opts
+  })
 
   opts.fullPath = fullPath
 
@@ -198,7 +235,11 @@ export async function toLdGraph(node, opts = {}) {
 
   opts.visit(nodeId, opts)
 
-  jsonld = await opts.iterateFields(jsonld, node, nodeId, opts)
+  jsonld = await opts.iterateFields(jsonld, {
+    node,
+    nodeId,
+    opts
+  })
 
   log('jsonld:', jsonld)
   return jsonld

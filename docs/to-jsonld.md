@@ -282,20 +282,22 @@ By default recursively calls `toLdGraph` for the field to generate the jsonld ob
 
 ### recurseField
 
+Recursively processes field. Here `recurse` is a function pointer to be used to recursively call  `toJsonLd(node, opts = {})` for next level iteration.
 
+`recurseField: (field, {recurse, node, opts})`
 
 ### filter
 
-```js
-filter: (fields, node, opts) => {
-  // list of fields to process
-  return []
-}
-```
+Filter fields to process
+
+`filter: (fields, {node, opts}) => list of fields to process`
 
 ### graphId
 
-`graphId: (soul, opts) => id`
+Generate the `@id` of the JsonLd graph node.
+By default uses this simple strategy: `[opts.schemaUrl, id].join('/')`
+
+`graphId: (id, {node, nodeVal, fullPath, opts}) => id`
 
 ### nodeId
 
@@ -332,13 +334,13 @@ By default adds `id` to `opts.visited.ids`
 By default adds a `@context` property if this is the first node visited
 The context is set to `schemaUrl`
 
-`addContext(jsonld, node, nodeVal, opts) => return jsonld`
+`addContext(jsonld, {node, nodeVal, opts}) => return jsonld`
 
 ### buildNode
 
 Builds the base `jsonld` node for this iteration, including `@id` and optional `@context` properties. Also returns the `nodeId`.
 
-`buildNode: (nodeVal, node, opts) => return {jsonld, nodeId}`
+`buildNode: (nodeVal, {node, opts}) => return {jsonld, nodeId}`
 
 ### logger
 
