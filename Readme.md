@@ -13,16 +13,18 @@ See *Todo* at the bottom for the roadmap. Pleas help out ;)
 npm i -S gun-levelgraph
 ```
 
-## Pre-requisites
+## Requirements
 
-The current implementation assumes the following (Promise) methods are available on each node, via `Gun.chain` extensions:
+The current implementation (see `src/to-jsonld.js`) by default assumes the following (Promise) methods are available on each node, via `Gun.chain` extensions:
 
-`await node.$fields()`
-`await node.$val()`
+`await node.$fields()` (used by function `iterateFields`)
+`await node.$val()` (used by function `nodeValue`)
 
-You can add these via [future-gun](https://github.com/kristianmandrup/future-gun)
+You can add these chain methods via [future-gun](https://github.com/kristianmandrup/future-gun)
 
-More chain utility functions are available in:
+Alternatively you can pass in custom `iterateFields` and `nodeValue` functions as options.
+
+Note: More chain utility functions are available in:
 
 - [chain-gun](https://github.com/kristianmandrup/chain-gun)
 - [water-gun](https://github.com/kristianmandrup/water-gun)
@@ -172,9 +174,35 @@ db.jsonld.put(jsonld, function(err, obj) {
 
 ## Options for fine control
 
+### iterateFields
+
+By default iterates every field of the `node` by calling `recurseField` (see below).
+
+Default requirements: `$fields` chain method on gun `node`
+
+`iterateFields: (jsonld, node, nodeId, opts) => jsonld`
+
+### nodeValue
+
+By default uses `await node.$val()` to get the value of the node.
+
+Default requirements: `$val` chain method on gun `node`
+
+`nodeValue: (node) => nodeValue (Object)`
+
+### recurseField
+
+By default recursively calls `toLdGraph` for the field to generate the jsonld object for that field.
+
+`recurseField: (field, node, fullPath, opts) => jsonld for field`
+
 ### schemaUrl
 
 `schemaUrl: 'http://www.people.com/schema'`
+
+### recurseField
+
+
 
 ### filter
 

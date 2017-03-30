@@ -89,6 +89,9 @@ function addDefaultOpts(opts) {
     nodeId,
     getFields,
     fullPath,
+    iterateFields,
+    nodeValue,
+    recurseField,
     prepareOpts
   }, opts)
 
@@ -120,9 +123,7 @@ const prepareOpts = (opts) => {
   return opts
 }
 
-
-// TODO: refactor
-async function parse(field, node, fullPath, opts) {
+async function recurseField(field, node, fullPath, opts) {
   opts.log('recurse', field)
   let fieldNode = node.path(field)
   opts.path = fullPath + '/' + field
@@ -130,12 +131,27 @@ async function parse(field, node, fullPath, opts) {
   return await toLdGraph(fieldNode, opts)
 }
 
+async function iterateFields(jsonld, node, nodeId, opts) {
+  let fullPath = opts.fullPath(nodeId, opts)
+
+  let fields = await opts.getFields(node, opts)
+
+  opts.log('parse fields', fields)
+  for (let field of fields) {
+    jsonld[field] = await opts.recurseField(field, node, fullPath, opts)
+  }
+  return jsonld
+}
+
+async function nodeValue(node) {
+  return await node.$val()
+}
 
 export async function toLdGraph(node, opts = {}) {
   opts = Object.assign(addDefaultOpts(defaultOpts), opts)
   let log = opts.log
 
-  let nodeVal = await node.$val()
+  let nodeVal = await opts.nodeValue(node)
 
   if (!opts.isNode(nodeVal)) {
     log('field', nodeVal)
@@ -159,14 +175,7 @@ export async function toLdGraph(node, opts = {}) {
 
   opts.visit(nodeId, opts)
 
-  let fullPath = opts.fullPath(nodeId, opts)
-
-  let fields = await opts.getFields(node, opts)
-
-  log('parse fields', fields)
-  for (let field of fields) {
-    jsonld[field] = await parse(field, node, fullPath, opts)
-  }
+  jsonld = await opts.iterateFields(jsonld, node, nodeId, opts)
 
   log('jsonld:', jsonld)
   return jsonld

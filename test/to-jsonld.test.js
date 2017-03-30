@@ -1,7 +1,7 @@
 import Gun from 'gun/gun'
 import test from 'ava'
 import {
-  createToLdGraph
+  createFunctions
 } from '../src/to-jsonld'
 import chain from 'gun-edge'
 chain(Gun)
@@ -33,7 +33,7 @@ test('savejsonld', async t => {
   let {
     toLdGraph,
     toJsonLd
-  } = createToLdGraph({
+  } = createFunctions({
     logging: true
   })
 

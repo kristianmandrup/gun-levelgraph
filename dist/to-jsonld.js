@@ -115,6 +115,9 @@ function addDefaultOpts(opts) {
     nodeId: nodeId,
     getFields: getFields,
     fullPath: fullPath,
+    iterateFields: iterateFields,
+    nodeValue: nodeValue,
+    recurseField: recurseField,
     prepareOpts: prepareOpts
   }, opts);
 
@@ -145,13 +148,50 @@ var prepareOpts = function prepareOpts(opts) {
   return opts;
 };
 
-// TODO: refactor
-async function parse(field, node, fullPath, opts) {
+async function recurseField(field, node, fullPath, opts) {
   opts.log('recurse', field);
   var fieldNode = node.path(field);
   opts.path = fullPath + '/' + field;
   opts.parentNode = node;
   return await toLdGraph(fieldNode, opts);
+}
+
+async function iterateFields(jsonld, node, nodeId, opts) {
+  var fullPath = opts.fullPath(nodeId, opts);
+
+  var fields = await opts.getFields(node, opts);
+
+  opts.log('parse fields', fields);
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var field = _step.value;
+
+      jsonld[field] = await opts.recurseField(field, node, fullPath, opts);
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return jsonld;
+}
+
+async function nodeValue(node) {
+  return await node.$val();
 }
 
 async function toLdGraph(node) {
@@ -160,7 +200,7 @@ async function toLdGraph(node) {
   opts = Object.assign(addDefaultOpts(defaultOpts), opts);
   var log = opts.log;
 
-  var nodeVal = await node.$val();
+  var nodeVal = await opts.nodeValue(node);
 
   if (!opts.isNode(nodeVal)) {
     log('field', nodeVal);
@@ -183,35 +223,7 @@ async function toLdGraph(node) {
 
   opts.visit(nodeId, opts);
 
-  var fullPath = opts.fullPath(nodeId, opts);
-
-  var fields = await opts.getFields(node, opts);
-
-  log('parse fields', fields);
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = fields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var field = _step.value;
-
-      jsonld[field] = await parse(field, node, fullPath, opts);
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
+  jsonld = await opts.iterateFields(jsonld, node, nodeId, opts);
 
   log('jsonld:', jsonld);
   return jsonld;
