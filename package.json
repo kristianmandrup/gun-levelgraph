@@ -16,12 +16,16 @@
     "triplet",
     "storage"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kristianmandrup/gun-levelgraph.git"
+  },
+
   "author": "Kristian Mandrup",
   "license": "MIT",
   "dependencies": {
     "async": "^2.1.5",
     "gun": "^0.6.6",
-    "gun-edge": "kristianmandrup/gun-edge#master",
     "gun-level": "^4.0.1",
     "level": "^1.6.0",
     "levelgraph": "^2.0.1",
@@ -29,6 +33,7 @@
   },
   "devDependencies": {
     "ava": "^0.18.2",
+    "gun-edge": "kristianmandrup/gun-edge#master",
     "babel-preset-es2015": "^6.22.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",

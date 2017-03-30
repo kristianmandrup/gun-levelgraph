@@ -2,16 +2,92 @@
 
 Interop layer between [Gun](gun.js.org) and [LevelGraph](https://github.com/mcollina/levelgraph) via [levelgraph-jsonld](https://github.com/mcollina/levelgraph-jsonld)
 
-Uses [gun-edge](https://github.com/kristianmandrup/gun-edge) internally
-
 ## Status
 
-WIP
+Conversion to JsonLd format is super flexible and works!
+See *Todo* at the bottom for the roadmap. Pleas help out ;)
 
 ## Install
 
 ```bash
 npm i -S gun-levelgraph
+```
+
+## Pre-requisites
+
+The current implementation assumes the following (Promise) methods are available on each node, via `Gun.chain` extensions:
+
+`await node.$fields()`
+`await node.$val()`
+
+You can add these via [future-gun](https://github.com/kristianmandrup/future-gun)
+
+More chain utility functions are available in:
+
+- [chain-gun](https://github.com/kristianmandrup/chain-gun)
+- [water-gun](https://github.com/kristianmandrup/water-gun)
+
+## Run Tests
+
+`npm i -g ava`
+
+Try `ava test/to-jsonld.test.js`
+
+## Setup
+
+The following setup guides assume initial Gun configuration:
+
+```js
+const gun = Gun();
+// get a "handle" to a Gun graph node
+let mark = gun.get('mark')
+```
+
+### Factory function
+
+```js
+import {
+  // factory
+  createFunctions
+} from 'gun-levelgraph'
+
+let defaultOpts = {
+  logging: true
+}
+
+// create functions with default options that suit your needs
+let {
+  toLdGraph,
+  toJsonLd
+} = createFunctions(defaultOpts)
+
+let {
+  result,
+  json
+} = await toJsonLd(mark)
+
+// or override default options
+toJsonLd(mark, {
+  // your overrides for this execution context
+})
+```
+
+### Utility functions
+
+```js
+import { toJsonLd, toLdGraph } from 'gun-levelgraph'
+
+let json = await toJsonLd(mark, opts)
+```
+
+### Chaining setup
+
+```js
+import chain from 'gun-levelgraph'
+chain(Gun)
+
+let json = await mark.$toJsonLd(opts)
+let graph = mark.$toLdGraph(opts)
 ```
 
 ## Usage
@@ -194,8 +270,7 @@ Set to a list of special paths to iterate on this node (See `putAt` hack above)
 
 ## TODO
 
-- Use `chain-gun` and `future-gun` instead of deprecated `gun-edge`
-- Use better chaining mechanism, similar to `chain-gun` to avoid importing `Gun`
+- Work on direct LevelGraph integration using current JsonLd functionality
 
 ## Licence
 

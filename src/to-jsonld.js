@@ -99,7 +99,7 @@ function addDefaultOpts(opts) {
 
 let defaultOpts = {}
 
-export function createToLdGraph(opts) {
+export function createFunctions(opts) {
   defaultOpts = addDefaultOpts(opts)
   return {
     toLdGraph,
@@ -180,6 +180,16 @@ export async function toJsonLd(node, opts = {}) {
   }
 }
 
-Gun.chain.$toJsonLd = async function (opts) {
-  return await toJsonLd(this, opts)
+export function addToJsonLd(chain) {
+  chain.$toJsonLd = function (opts) {
+    return toJsonLd(this, opts)
+  }
+
+  chain.$toLdGraph = function (opts) {
+    return toLdGraph(this, opts)
+  }
+
+  return chain
 }
+
+export default addToJsonLd
