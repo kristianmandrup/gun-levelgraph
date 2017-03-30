@@ -78,7 +78,7 @@ export function createForLvGraph(_opts) {
     }
     opts.log('lvGet', iri, context, opts)
     // graphdb.jsonld.get = function(iri, context, options, callback) {
-    jsonld.get(jsonld, context, opts, cb)
+    jsonld.get(iri, context, opts, cb)
   }
 
   //  graphdb.jsonld.put = function(obj, options, callback) {

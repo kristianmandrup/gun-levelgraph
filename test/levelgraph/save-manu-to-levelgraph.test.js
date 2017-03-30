@@ -56,9 +56,12 @@ let {
   lvGet,
   lvPut
 } = commands
+console.log('commands', commands)
 
-function doQuery(id, queryOpts, t) {
-  lvGet(id, queryOpts, function (err, obj) {
+function doQuery(id, ctx, t) {
+  console.log('doQuery', id, ctx, lvGet)
+  // lvGet = function (iri, context, cb, opts = {})
+  lvGet(id, ctx, function (err, obj) {
     if (err) {
       throw err
     }
@@ -83,13 +86,13 @@ test.cb('saveToLvGraph', t => {
     t.is(obj.homepage, 'http://manu.sporny.org/')
 
     let id = node['@id']
-    let queryOpts = {
+    let ctx = {
       '@context': node['@context']
     }
-    console.log('query', id, queryOpts)
+    console.log('query', id, ctx)
     // perform query on same node
     try {
-      doQuery(id, queryOpts, t)
+      doQuery(id, ctx, t)
     } catch (err) {
       console.error(err)
       throw err

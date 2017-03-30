@@ -83,6 +83,7 @@ function createForLvGraph(_opts) {
     var opts = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     opts = Object.assign(dbOptions, opts);
+    // opts.log('get', iri, context, cb)
     var db = opts.db;
     var jsonld = opts.jsonld || db.jsonld;
 
@@ -91,7 +92,7 @@ function createForLvGraph(_opts) {
     }
     opts.log('lvGet', iri, context, opts);
     // graphdb.jsonld.get = function(iri, context, options, callback) {
-    jsonld.get(jsonld, context, opts, cb);
+    jsonld.get(iri, context, opts, cb);
   };
 
   //  graphdb.jsonld.put = function(obj, options, callback) {
