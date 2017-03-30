@@ -3,11 +3,11 @@ import test from 'ava'
 import {
   createSaveToLvGraph,
   $saveToLvGraph
-} from '../src/save-levelgraph'
+} from '../../src/save-levelgraph'
 
 import {
   sampleGunToJsonLd
-} from './util/jsonld'
+} from '../util/jsonld'
 
 let sampleJson = `{
   "@context": "http://schema.org/",
@@ -42,14 +42,14 @@ async function makeQuery($dbGet, {
   context,
   t
 }) {
-  console.log('makeQuery', queryId, context)
-  let opts = {
+  let queryOpts = {
     '@context': context
   }
-
+  console.log('makeQuery', queryId, queryOpts)
   try {
-    return await $dbGet(queryId, opts)
+    return await $dbGet(queryId, queryOpts)
   } catch (err) {
+    console.error(err)
     throw err
   }
 }
@@ -64,8 +64,8 @@ test('save Gun graph to LvGraph', async t => {
   //   add valid @id on each node
 
   console.log('jsonld', jsonld)
-  let queryId = jsonld['@id'] || '#mark'
-  let context = jsonld['@context'] || "http://schema.org/"
+  let queryId = jsonld['@id'] || 'http://xmlns.com/foaf/0.1/mark'
+  let context = jsonld['@context'] || "http://xmlns.com/foaf/0.1"
 
   let queryOpts = {
     queryId,
@@ -90,15 +90,12 @@ test('save Gun graph to LvGraph', async t => {
     console.log('mark was PUT', result)
     t.is(result.name, 'mark')
 
-    console.log('make query', queryOpts)
-
     let queryRes = await makeQuery($dbGet, queryOpts)
-    console.log('GOT mark', queryId, queryRes)
-
     if (queryRes) {
+      console.log('GOT mark', queryId, queryRes)
       t.is(queryRes.name, 'mark')
     } else {
-      throw new Error(`Not match for query: ${queryId} in ${queryOpts.context}`)
+      throw new Error(`No match for query: ${queryId} in ${queryOpts.context}`)
     }
 
   } catch (err) {

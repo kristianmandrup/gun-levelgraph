@@ -18,11 +18,18 @@ function visit(id, opts) {
   opts.visited.ids.push(id)
 }
 
+const defaultCtx = function (opts) {
+  return {
+    '@vocab': opts.schemaUrl
+  }
+}
+
 function addContext(jsonld, node, opts) {
   if (!isFirstVisit(node, opts)) return jsonld
 
-  let context = opts.schemaUrl || 'http://schema.org/'
-  opts.log('root node:', context)
+  let nodeCtx = node.context ? node.context() : false
+  let context = nodeCtx || opts.context || defaultCtx(opts)
+  opts.log('context:', context)
   jsonld['@context'] = context
   return jsonld
 }
@@ -65,19 +72,25 @@ const buildNode = (nodeVal, node, opts) => {
   let nodeId = opts.nodeId(nodeVal)
   opts.log('node id:', nodeId)
 
-  let id = opts.graphId(nodeId, opts)
+  let fullPath = opts.buildfullPath(nodeId, opts)
+
+  let id = opts.graphId(nodeId, fullPath, opts)
   jsonld['@id'] = id
 
   return {
     jsonld,
-    nodeId
+    nodeId,
+    fullPath
   }
 }
 
-const graphId = (id) => '#' + id
+const graphId = (id, fullPath, opts) => {
+  return [opts.schemaUrl, id].join('/')
+}
 
 function addDefaultOpts(opts) {
   opts = Object.assign({
+    schemaUrl: 'http://xmlns.com/foaf/0.1',
     isFirstVisit,
     wasVisited,
     visit,
@@ -88,7 +101,7 @@ function addDefaultOpts(opts) {
     logger,
     nodeId,
     getFields,
-    fullPath,
+    buildfullPath,
     iterateFields,
     nodeValue,
     recurseField,
@@ -112,8 +125,8 @@ export function createFunctions(opts) {
   }
 }
 
-const fullPath = (id, opts) => {
-  let path = (opts.path || '') + '/' + id
+const buildfullPath = (id, opts) => {
+  let path = opts.path ? [opts.path, id].join('/') : id
   delete opts.path
   return path
 }
@@ -125,22 +138,20 @@ const prepareOpts = (opts) => {
   return opts
 }
 
-async function recurseField(field, node, fullPath, opts) {
+async function recurseField(field, node, opts) {
   opts.log('recurse', field)
   let fieldNode = node.path(field)
-  opts.path = fullPath + '/' + field
+  opts.path = opts.fullPath + '/' + field
   opts.parentNode = node
   return await toLdGraph(fieldNode, opts)
 }
 
 async function iterateFields(jsonld, node, nodeId, opts) {
-  let fullPath = opts.fullPath(nodeId, opts)
-
   let fields = await opts.getFields(node, opts)
 
   opts.log('parse fields', fields)
   for (let field of fields) {
-    jsonld[field] = await opts.recurseField(field, node, fullPath, opts)
+    jsonld[field] = await opts.recurseField(field, node, opts)
   }
   return jsonld
 }
@@ -169,8 +180,11 @@ export async function toLdGraph(node, opts = {}) {
 
   let {
     jsonld,
+    fullPath,
     nodeId
   } = opts.buildNode(nodeVal, node, opts)
+
+  opts.fullPath = fullPath
 
   log('build node', jsonld)
   opts.$id = jsonld['@id']

@@ -123,21 +123,100 @@ mark
 JSONLD
 {
   "@context": "http://schema.org/",
-  "@id": "#mark",
+  "@id": "person:mark",
   "name": "mark",
   "gender": "male",
   "wife": {
-    "@id": "#amber",
+    "@id": "person:amber",
     "name": "amber",
     "gender": "female"
   },
   "self": {
-    "@id": "#mark"
+    "@id": "person:mark"
   }
 }
 ```
 
-Note that it detects circular references and for such nodes already visited, it only returns the `@id` reference.
+### JsonLd rules
+
+You can use the [Foaf spec](http://xmlns.com/foaf/spec/) to namespace your content with approapritate schemas and unique/appropriate identifiers.
+
+#### @id
+
+Seems to prefer a protocol id format such as http://id
+
+- `mark` and `#mark` fails.
+- `:mark` works but is slow
+
+By convention we currently use `[opts.schemaUrl, id].join('/')`
+
+#### @context
+
+Can be an object or an URI string. Currently by default calculated as follows.
+You can add a `Gun.chain` method `context()` which returns the context of a given node.
+
+```js
+  let nodeCtx = node.context ? node.context() : false
+  let context = nodeCtx || opts.context || defaultCtx()
+```
+
+You need to use the `@context` to specify the types of field allowed:
+
+```js
+{
+  "@context": {
+    "@vocab": "http://xmlns.com/foaf/0.1/",
+    "homepage": {
+      "@type": "@id"
+    },
+    "knows": {
+      "@type": "@id"
+    },
+    "based_near": {
+      "@type": "@id"
+    }
+  },
+  "@id": "http://manu.sporny.org#person",
+  "name": "Manu Sporny",
+  "homepage": "http://manu.sporny.org/",
+  "knows": [{
+    "@id": "https://my-profile.eu/people/deiu/card#me",
+    "name": "Andrei Vlad Sambra",
+    "based_near": "http://dbpedia.org/resource/Paris"
+  },
+  ...
+  }]
+}
+```
+
+For more info, do your own research or ask the nice guys at LevelGraph, such as [@mcollina](https://github.com/mcollina)
+
+A good starting point is: `test/levelgraph/save-mark-to-levelgraph.test.js`
+
+```js
+{
+  "@context": {
+    "@vocab": "http://xmlns.com/foaf/0.1/",
+    "name": "http://xmlns.com/foaf/0.1/name",
+    "gender": "http://xmlns.com/foaf/0.1/gender",
+    "wife": "http://xmlns.com/foaf/0.1/wife"
+  },
+  "@id": "person:mark",
+  "name": "mark",
+  "gender": "male",
+  "wife": {
+    "@id": "person:amber",
+    "name": "amber",
+    "gender": "female"
+  }
+}
+```
+
+You will have to play with the various option functions to make it generate an output that fits your purpose.
+
+### Circular refs
+
+Note that it detects circular references and for such nodes already visited, it only returns the `@id` reference and `"@type": "@id"` to make clear it should be treated as a pointer to a resource.
 
 The triples for that look like this:
 
