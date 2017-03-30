@@ -26,6 +26,12 @@ See docs:
 - [to-jsonld](https://github.com/kristianmandrup/gun-levelgraph/blob/master/docs/to-jsonld.md)
 - [save-levelgraph](https://github.com/kristianmandrup/gun-levelgraph/blob/master/docs/save-levelgraph.md)
 
+## FAQ
+
+A lot of useful insight can be gathered from answers to my questions on this [levelgraph-jsonld issue](https://github.com/mcollina/levelgraph-jsonld/issues/62)
+
+How it will help you as well!
+
 ## Gun utility functions
 
 More Gun chain utility functions are available via:
