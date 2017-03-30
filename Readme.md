@@ -24,7 +24,7 @@ npm i -S gun-levelgraph
 See docs:
 
 - [to-jsonld](https://github.com/kristianmandrup/gun-levelgraph/blob/master/docs/to-jsonld.md)
-- [save-levelgraph](https://github.com/kristianmandrup/gun-levelgraph/blob/master/docs/save-levelgraph.md)
+- [levelgraph](https://github.com/kristianmandrup/gun-levelgraph/blob/master/docs/levelgraph.md)
 
 ## FAQ
 

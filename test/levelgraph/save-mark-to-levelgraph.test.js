@@ -71,12 +71,15 @@ let mark3 = {
 
 let {
   dbGet,
-  saveToLvGraph
+  commands
 } = createSaveToLvGraph()
 
+let {
+  lvGet
+} = commands
 
 function doQuery(id, queryOpts, t) {
-  dbGet(id, queryOpts, function (err, obj) {
+  lvGet(id, queryOpts, function (err, obj) {
     if (err) {
       throw err
     }
@@ -87,10 +90,10 @@ function doQuery(id, queryOpts, t) {
   });
 }
 
-test.cb('saveToLvGraph', t => {
+test.cb('lvPut', t => {
   let node = mark1
 
-  saveToLvGraph(node, function (err, obj) {
+  lvPut(node, function (err, obj) {
     if (err) {
       throw err
     }
