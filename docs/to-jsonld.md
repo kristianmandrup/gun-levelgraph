@@ -150,6 +150,19 @@ Seems to prefer a protocol id format such as http://id
 
 By convention we currently use `[opts.schemaUrl, id].join('/')`
 
+What happens behind the scenes is that `@id` is not understood as a `IRI`. But that's not valid RDF. i.e. You can't say something about literals ("mark" is a string literal). Whereas "http://example.org/mark" is a resource and you can say things about it!
+
+`:mark`, `http:mark`, etc are all valid URI's (though they obviously wouldn't resolve to anything). `#mark` doesn't work because it's only a "fragment identifier" and not a complete URI. For instance, `?mark` wouldn't work either because it's only a component of a full URI (the query string) and not an "absolute" URI.
+
+The guiding principle here is known as the "open-world assumption" (OWA). Essentially, even "local" data identifiers need to be created in such a way that if they were to "surface" on the wider Web, they would not (ideally) conflict with anyone elses data. This is the reason that LevelGraph uses UUID-based blank nodes (`_:` prefixed UUIDs) rather than localized `_:b1` (etc) style blank nodes.
+
+LevelGraph does provide a way to set your own base URI via `@base` or using the `base:` option on db creation (ie. `opts.jsonldOpts`).
+
+#### @base
+
+The `@base` is used as the base IRI (Internet Resource Indicator) for any `@id`.
+This means that with a `@base: 'http://example.org'` and `@id: 'mark'` the full `@id` will be `http://example.org/mark` (see [comment](https://github.com/mcollina/levelgraph-jsonld/issues/62#issuecomment-290410736)).
+
 #### @context
 
 Can be an object or an URI string. Currently by default calculated as follows.
@@ -166,6 +179,7 @@ You need to use the `@context` to specify the types of field allowed:
 {
   "@context": {
     "@vocab": "http://xmlns.com/foaf/0.1/",
+    "@base": "http://example.org"
     "homepage": {
       "@type": "@id"
     },

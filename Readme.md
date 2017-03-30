@@ -32,6 +32,20 @@ A lot of useful insight can be gathered from answers to my questions on this [le
 
 How it will help you as well!
 
+Some helpful resources:
+
+- [levelgraph searches](https://github.com/mcollina/levelgraph#searches)
+- [levelgraph playground](https://wileylabs.github.io/levelgraph-playground/)
+- [jsonld playground](http://json-ld.org/playground/)
+
+## Db errors & locks
+
+_The locking error is because levelup is not multi user by default. So indeed you must have another process with the db opened. As long as you don't have important data in it then deleting is an option. Killing zombie processes which might have the file locked is another (maybe best to take the habit of doing that instead of a delete...)._
+
+## Debugging
+
+When debugging it's useful to see what LevelGraph directly returns (after putting with `db.json.ld.put()`) using : `db.get({}, console.log);`
+
 ## Gun utility functions
 
 More Gun chain utility functions are available via:
