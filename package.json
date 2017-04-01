@@ -26,7 +26,7 @@
   "dependencies": {
     "async": "^2.1.5",
     "gun": "^0.6.6",
-    "gun-level": "^4.0.1",
+    "gun-level": "^5.0.0",
     "level": "^1.6.0",
     "levelgraph": "^2.0.1",
     "levelgraph-jsonld": "^1.0.3"
