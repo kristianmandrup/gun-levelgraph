@@ -1,5 +1,7 @@
 # gun-levelgraph
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/kristianmandrup/gun-levelgraph.svg)](https://greenkeeper.io/)
+
 Interop layer between [Gun](gun.js.org) and [LevelGraph](https://github.com/mcollina/levelgraph) via [levelgraph-jsonld](https://github.com/mcollina/levelgraph-jsonld)
 
 ## Status
